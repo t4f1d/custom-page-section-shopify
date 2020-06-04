@@ -3,18 +3,38 @@
 {%- if template.name == 'product' -%}
   {%- capture main_entity_microdata -%}
     "@type": "Product",
+  {%- if product.variants.first.barcode.size == 12 -%}
+    "gtin12": "{{ product.variants.first.barcode }}",
+  {%- endif -%}
+  {%- if product.variants.first.barcode.size == 13 -%}
+    "gtin13": "{{ product.variants.first.barcode }}",
+  {%- endif -%}
+  {%- if product.variants.first.barcode.size == 14 -%}
+    "gtin14": "{{ product.variants.first.barcode }}",
+  {%- endif -%}
+    "gtin8": "{{ product.id }}",
+  "productID": "{{ product.id }}",
     "offers": {
       "@type": "Offer",
       "availability": {%- if product.available -%}"https://schema.org/InStock"{%- else -%}"https://schema.org/OutOfStock"{%- endif -%},
       "price": {{ product.price_min | money_without_currency | json }},
       "priceCurrency": {{ shop.currency | json }},
-      "url": "{{ shop.url }}{{ product.url }}"
+    "priceValidUntil": "{{ 'now' | date: '%s' | plus: 31536000 | date: '%Y-%m-%d' | uri_encode | replace:'+','%20' }}",
+    "url": "{{ shop.url }}{{ product.url }}"
     },
     "brand": {{ product.vendor | json }},
     "name": {{ product.title | json }},
     "description": {{ product.description | strip_html | json }},
     "category": {{ product.type | json }},
     "url": "{{ shop.url }}{{ product.url }}",
+    {%- if product.variants.first.sku != blank -%}
+    "sku": "{{ product.variants.first.sku }}",
+    {%- else -%}
+    "sku": "{{ product.variants.first.id }}",
+    {%- endif -%}
+
+
+
     "image": {
       "@type": "ImageObject",
       "url": "https:{{ product.featured_image | img_url: '1024x1024' }}",
